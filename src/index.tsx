@@ -108,7 +108,6 @@ type RendererAction =
 | { type: 'SET_ZOOM_DELTA'; payload: RendererState['zoomDelta'] }
 
 function reducer (state: RendererState, action: RendererAction): RendererState {
-  console.log('ACTION', action.type, action.payload)
   switch (action.type) {
     case 'SET_CAMERA': {
       const updated = cameras.perspective.update({ ...state.camera, ...action.payload })
