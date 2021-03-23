@@ -13,7 +13,7 @@ By itself it doesn't actually render any solids, it just shows a default grid vi
 npm i -S jscad-react
 
 # Install the jscad modeling package.
-npm - -S @jscad/modeling
+npm i -S @jscad/modeling
 ```
 
 ## Usage
