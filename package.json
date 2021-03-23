@@ -1,5 +1,5 @@
 {
-  "name": "@jscad/react",
+  "name": "jscad-react",
   "description": "React component for rendering jscad models.",
   "version": "0.1.0",
   "author": "Norman Kerr 柯念北",

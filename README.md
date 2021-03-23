@@ -1,4 +1,4 @@
-# @jscad/react
+# jscad-react
 
 ## Overview
 
@@ -10,7 +10,7 @@ By itself it doesn't actually render any solids, it just shows a default grid vi
 
 ```bash
 # Install the react component.
-npm i -S @jscad/react
+npm i -S jscad-react
 
 # Install the jscad modeling package.
 npm - -S @jscad/modeling
@@ -24,7 +24,7 @@ npm - -S @jscad/modeling
 import * as React from 'react'
 import { cube } from '@jscad/modeling/src/primitives'
 import { render } from 'react-dom'
-import { Renderer } from '@jscad/react'
+import { Renderer } from 'jscad-react'
 
 const App: React.FC = () => {
   const [solids] = React.useState<any[]>([cube([0, 0, 0], 12)])
@@ -40,7 +40,7 @@ render(<App />, document.body)
 import * as React from 'react'
 import { cube } from '@jscad/modeling/src/primitives'
 import { render } from 'react-dom'
-import { Renderer } from '@jscad/react'
+import { Renderer } from 'jscad-react'
 
 const App = () => {
   const [solids] = React.useState([cube([0, 0, 0], 12)])
