@@ -1,0 +1,112 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "standard",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:react/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "react",
+        "react-hooks"
+    ],
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "rules": {
+        "camelcase": "off",
+        "indent": "off",
+        "array-element-newline": [
+            2,
+            "consistent"
+        ],
+        "array-bracket-newline": [
+            2,
+            "consistent"
+        ],
+        "brace-style": [
+            2,
+            "stroustrup",
+            {
+                "allowSingleLine": false
+            }
+        ],
+        "multiline-ternary": "off",
+        "max-len": [
+            1,
+            256,
+            2,
+            {
+                "ignoreUrls": true
+            }
+        ],
+        "no-multiple-empty-lines": [
+            2,
+            {
+                "max": 1,
+                "maxBOF": 1
+            }
+        ],
+        "no-undef": "off",
+        "object-curly-spacing": [
+            2,
+            "always"
+        ],
+        "no-use-before-define": "off",
+        "@typescript-eslint/member-delimiter-style": [
+            2
+        ],
+        "@typescript-eslint/no-use-before-define": "error",
+        "@typescript-eslint/indent": [
+            2,
+            2
+        ],
+        "@typescript-eslint/explicit-member-accessibility": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/camelcase": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "warn",
+        "@typescript-eslint/no-var-requires": "off",
+        "react/self-closing-comp": [
+            1,
+            {
+                "component": true,
+                "html": true
+            }
+        ],
+        "react/jsx-first-prop-new-line": [
+            1,
+            "multiline"
+        ],
+        "react/jsx-max-props-per-line": [
+            1,
+            {
+                "maximum": 1,
+                "when": "multiline"
+            }
+        ],
+        "react/jsx-one-expression-per-line": [
+            1,
+            {
+                "allow": "single-child"
+            }
+        ],
+        "react/no-unescaped-entities": "off",
+        "react/prop-types": "off",
+        "react-hooks/rules-of-hooks": 2,
+        "react-hooks/exhaustive-deps": "warn"
+    }
+}

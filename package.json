@@ -1,0 +1,44 @@
+{
+  "name": "@jscad/react",
+  "description": "React component for rendering jscad models.",
+  "version": "0.1.0",
+  "author": "Norman Kerr 柯念北",
+  "license": "MIT",
+  "repository": "https://github.com/kenianbei/jscad-react",
+  "keywords": [
+    "csg",
+    "jscad",
+    "modeling",
+    "openjscad",
+    "parametric",
+    "react"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@jscad/regl-renderer": "alpha"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.0.0",
+    "@typescript-eslint/parser": "^4.0.0",
+    "eslint": "^7.0.0",
+    "eslint-config-standard": "^16.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "typescript": "^4.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  }
+}
