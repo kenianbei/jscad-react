@@ -55,22 +55,25 @@ const initialProps = ({ animate, animationRate, height, options, solids, width }
     height: height || 480,
     options: {
       gridOptions: {
-        show: options?.gridOptions?.show || true,
-        color: options?.gridOptions?.color || [0, 0, 0, 1],
-        subColor: options?.gridOptions?.subColor || [0, 0, 1, 0.5],
-        fadeOut: options?.gridOptions?.fadeOut || false,
-        transparent: options?.gridOptions?.transparent || true,
-        size: options?.gridOptions?.size || [144, 144],
-        ticks: options?.gridOptions?.ticks || [12, 1]
+        show: true,
+        color: [0, 0, 0, 1],
+        subColor: [0, 0, 1, 0.5],
+        fadeOut: false,
+        transparent: true,
+        size: [144, 144],
+        ticks: [12, 1],
+        ...options?.gridOptions
       },
       axisOptions: {
-        show: options?.axisOptions?.show || true
+        show: true,
+        ...options?.axisOptions
       },
       viewerOptions: {
-        initialPosition: options?.viewerOptions?.initialPosition || [50, -50, 50],
-        panSpeed: options?.viewerOptions?.rotateSpeed || 0.75,
-        rotateSpeed: options?.viewerOptions?.panSpeed || 0.002,
-        zoomSpeed: options?.viewerOptions?.zoomSpeed || 0.08
+        initialPosition: [50, -50, 50],
+        panSpeed: 0.75,
+        rotateSpeed: 0.002,
+        zoomSpeed: 0.08,
+        ...options?.viewerOptions
       }
     },
     solids: solids || [],
