@@ -28,7 +28,7 @@ import { Renderer } from 'jscad-react'
 
 const App: React.FC = () => {
   const [solids] = React.useState<any[]>([cube([0, 0, 0], 12)])
-  return <Renderer animate solids={solids} height={500} width={500} />
+  return <Renderer solids={solids} height={500} width={500} />
 }
 
 render(<App />, document.body)
@@ -44,11 +44,13 @@ import { Renderer } from 'jscad-react'
 
 const App = () => {
   const [solids] = React.useState([cube([0, 0, 0], 12)])
-  return <Renderer animate solids={solids} height={500} width={500} />
+  return <Renderer solids={solids} height={500} width={500} />
 }
 
 render(<App />, document.body)
 ```
+
+The renderer only rerenders on state change. If your app is having rendering issues you can add the animate prop and it will run the render as a requestAnimationFrame loop.
 
 ## License
 

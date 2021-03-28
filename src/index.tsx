@@ -1,12 +1,11 @@
 import * as React from 'react'
 import { cameras, controls, drawCommands, entitiesFromSolids, prepareRender } from '@jscad/regl-renderer'
-import { useInterval, useKeyPress } from './hooks'
+import { useAnimationFrame, useKeyPress } from './hooks'
 
 type Solid = any;
 
 interface RendererProps {
   animate?: boolean;
-  animationRate?: number;
   height?: number;
   options?: {
     gridOptions?: {
@@ -48,10 +47,9 @@ interface RendererState {
   zoomDelta: number;
 }
 
-const initialProps = ({ animate, animationRate, height, options, solids, width }: RendererProps): RendererProps => {
+const initialProps = ({ animate, height, options, solids, width }: RendererProps): RendererProps => {
   return {
     animate: animate || false,
-    animationRate: animationRate || 10,
     height: height || 480,
     options: {
       gridOptions: {
@@ -138,8 +136,10 @@ function reducer (state: RendererState, action: RendererAction): RendererState {
 }
 
 const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forwardRef) => {
-  const { animate, animationRate, height, options, solids, width } = initialProps(props)
+  const { animate, height, options, solids, width } = initialProps(props)
   const [state, dispatch] = React.useReducer(reducer, initialState(options))
+
+  const [init, setInit] = React.useState(false)
 
   const ref = React.useCallback(payload => dispatch({ type: 'SET_ELEMENT', payload }), [])
 
@@ -307,11 +307,20 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     state.render(content)
   }, [content, state])
 
-  useInterval(!!animate, animationRate || 10, () => {
-    if (!state.render) return
+  useAnimationFrame(!!animate, () => {
+    if (state.render) state.render(content)
+  }, [content, state])
+
+  React.useEffect(() => {
+    if (init) return
+    if (animate) return
     if (!content) return
-    state.render(content)
-  })
+    if (!state.render) return
+    setTimeout(() => {
+      setInit(true)
+      state.render && state.render(content)
+    }, 100)
+  }, [animate, content, init, state])
 
   if (!forwardRef) return <div ref={ref} />
   return <div ref={forwardRef} />
