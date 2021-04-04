@@ -144,11 +144,7 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   const ref = React.useCallback(payload => dispatch({ type: 'SET_ELEMENT', payload }), [])
 
   const content = React.useMemo(() => {
-    if (!state.element) return undefined
-    if (!state.camera) return undefined
     return {
-      glOptions: { container: state.element },
-      camera: state.camera,
       drawCommands: {
         drawGrid: drawCommands.drawGrid,
         drawAxis: drawCommands.drawAxis,
@@ -177,8 +173,6 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
       ]
     }
   }, [
-    state.camera,
-    state.element,
     options?.axisOptions?.show,
     options?.gridOptions?.color,
     options?.gridOptions?.fadeOut,
@@ -260,7 +254,16 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   React.useEffect(() => {
     if (state.render) return
     if (!content) return
-    dispatch({ type: 'SET_RENDER', payload: prepareRender(content) })
+    if (!state.element) return
+    if (!state.camera) return
+    dispatch({
+      type: 'SET_RENDER',
+      payload: prepareRender({
+        glOptions: { container: state.element },
+        camera: state.camera,
+        ...content
+      })
+    })
   }, [content, state])
 
   React.useEffect(() => {
@@ -304,11 +307,11 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   React.useEffect(() => {
     if (!state.render) return
     if (!content) return
-    state.render(content)
+    state.render({ camera: state.camera, ...content })
   }, [content, state])
 
   useAnimationFrame(!!animate, () => {
-    if (state.render) state.render(content)
+    if (state.render) state.render({ camera: state.camera, ...content })
   }, [content, state])
 
   React.useEffect(() => {
