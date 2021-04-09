@@ -134,9 +134,6 @@ document.addEventListener('gesturechange', e => e.preventDefault())
 const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forwardRef) => {
   const { animate, height, options, solids, width } = initialProps(props)
   const [state, dispatch] = React.useReducer(reducer, initialState(options))
-
-  const [init, setInit] = React.useState(false)
-
   const ref = React.useRef<HTMLDivElement>(null)
 
   const content = React.useMemo(() => {
@@ -280,26 +277,17 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     dispatch({ type: 'SET_ZOOM_DELTA', payload: 0 })
   }, [state.camera, state.controls, options?.viewerOptions?.zoomSpeed, state.zoomDelta])
 
-  React.useEffect(() => {
+  const render = React.useCallback(() => {
     if (!state.render) return
     if (!content) return
     state.render({ camera: state.camera, ...content })
   }, [content, state])
 
-  useAnimationFrame(!!animate, () => {
-    if (state.render) state.render({ camera: state.camera, ...content })
-  }, [content, state])
-
   React.useEffect(() => {
-    if (init) return
-    if (animate) return
-    if (!content) return
-    if (!state.render) return
-    setTimeout(() => {
-      setInit(true)
-      state.render && state.render(content)
-    }, 100)
-  }, [animate, content, init, state])
+    if (!animate) render()
+  }, [animate, render])
+
+  useAnimationFrame(!!animate, () => render(), [render])
 
   if (!forwardRef) return <div ref={ref} style={{ touchAction: 'none' }} />
   return <div ref={forwardRef} style={{ touchAction: 'none' }} />
@@ -307,4 +295,4 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
 
 Renderer.displayName = 'Renderer'
 
-export { RendererProps, RendererState, Renderer }
+export { RendererProps, RendererState, RendererAction, Renderer, initialProps, initialState }
