@@ -24,7 +24,8 @@
   },
   "peerDependencies": {
     "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react-dom": "^17.0.0",
+    "react-use-gesture": "^9.0.0"
   },
   "devDependencies": {
     "@types/react": "^17.0.0",
