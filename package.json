@@ -1,7 +1,7 @@
 {
   "name": "jscad-react",
   "description": "React component for rendering jscad models.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Norman Kerr 柯念北",
   "license": "MIT",
   "repository": "https://github.com/kenianbei/jscad-react",
