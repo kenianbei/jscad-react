@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cameras, controls, drawCommands, entitiesFromSolids, prepareRender } from '@jscad/regl-renderer'
 import { useAnimationFrame, useKeyPress } from './hooks'
+import { useDrag, usePinch, useWheel } from 'react-use-gesture'
 
 type Solid = any;
 
@@ -39,11 +40,9 @@ interface RendererState {
     shift: 'up' | 'down';
     mouse: 'up' | 'down';
   };
-  pan: boolean;
   panDelta: number[];
-  rotate: boolean;
-  rotateDelta: number[];
   render?: (content: any) => void;
+  rotateDelta: number[];
   zoomDelta: number;
 }
 
@@ -88,9 +87,7 @@ const initialState = (options: RendererProps['options']): RendererState => {
     controls: controls.orbit.defaults,
     element: null,
     inputs: { mouse: 'up', shift: 'up' },
-    pan: false,
     panDelta: [0, 0],
-    rotate: false,
     rotateDelta: [0, 0],
     zoomDelta: 0
   }
@@ -102,10 +99,8 @@ type RendererAction =
 | { type: 'SET_ELEMENT'; payload: RendererState['element'] }
 | { type: 'SET_INPUTS'; payload: RendererState['inputs'] }
 | { type: 'SET_PAN_DELTA'; payload: RendererState['panDelta'] }
-| { type: 'SET_PAN'; payload: RendererState['pan'] }
 | { type: 'SET_RENDER'; payload: RendererState['render'] }
 | { type: 'SET_ROTATE_DELTA'; payload: RendererState['rotateDelta'] }
-| { type: 'SET_ROTATE'; payload: RendererState['rotate'] }
 | { type: 'SET_ZOOM_DELTA'; payload: RendererState['zoomDelta'] }
 
 function reducer (state: RendererState, action: RendererAction): RendererState {
@@ -127,13 +122,14 @@ function reducer (state: RendererState, action: RendererAction): RendererState {
     case 'SET_ELEMENT': return { ...state, element: action.payload }
     case 'SET_INPUTS': return { ...state, inputs: action.payload }
     case 'SET_PAN_DELTA': return { ...state, panDelta: action.payload }
-    case 'SET_PAN': return { ...state, pan: action.payload }
     case 'SET_RENDER': return { ...state, render: action.payload }
     case 'SET_ROTATE_DELTA': return { ...state, rotateDelta: action.payload }
-    case 'SET_ROTATE': return { ...state, rotate: action.payload }
     case 'SET_ZOOM_DELTA': return { ...state, zoomDelta: action.payload }
   }
 }
+
+document.addEventListener('gesturestart', e => e.preventDefault())
+document.addEventListener('gesturechange', e => e.preventDefault())
 
 const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forwardRef) => {
   const { animate, height, options, solids, width } = initialProps(props)
@@ -141,7 +137,7 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
 
   const [init, setInit] = React.useState(false)
 
-  const ref = React.useCallback(payload => dispatch({ type: 'SET_ELEMENT', payload }), [])
+  const ref = React.useRef<HTMLDivElement>(null)
 
   const content = React.useMemo(() => {
     return {
@@ -184,27 +180,19 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     solids
   ])
 
-  const onMouseLeave = React.useCallback(() => {
-    dispatch({ type: 'SET_PAN', payload: false })
-    dispatch({ type: 'SET_ROTATE', payload: false })
-  }, [])
+  useDrag((event) => {
+    dispatch({ type: 'SET_INPUTS', payload: { ...state.inputs, mouse: event.down ? 'down' : 'up' } })
+    if (state.inputs.mouse === 'down' && (state.inputs.shift === 'down' || event.touches === 3)) dispatch({ type: 'SET_PAN_DELTA', payload: [-event.delta[0], event.delta[1]] })
+    if (state.inputs.mouse === 'down' && state.inputs.shift === 'up' && event.touches === 1) dispatch({ type: 'SET_ROTATE_DELTA', payload: [event.delta[0], -event.delta[1]] })
+  }, { domTarget: ref || forwardRef })
 
-  const onMouseMove = React.useCallback(event => {
-    if (state.rotate) dispatch({ type: 'SET_ROTATE_DELTA', payload: [event.movementX, -event.movementY] })
-    if (state.pan) dispatch({ type: 'SET_PAN_DELTA', payload: [-event.movementX, event.movementY] })
-  }, [state.pan, state.rotate])
+  usePinch((event) => {
+    if (event.touches === 2) dispatch({ type: 'SET_ZOOM_DELTA', payload: -event.delta[0] })
+  }, { domTarget: ref || forwardRef })
 
-  const onMouseDown = React.useCallback(() => {
-    dispatch({ type: 'SET_INPUTS', payload: { ...state.inputs, mouse: 'down' } })
-  }, [state.inputs])
-
-  const onMouseUp = React.useCallback(() => {
-    dispatch({ type: 'SET_INPUTS', payload: { ...state.inputs, mouse: 'up' } })
-  }, [state.inputs])
-
-  const onWheel = React.useCallback(event => {
-    dispatch({ type: 'SET_ZOOM_DELTA', payload: event.deltaY })
-  }, [])
+  useWheel((event) => {
+    dispatch({ type: 'SET_ZOOM_DELTA', payload: event.delta[1] })
+  }, { domTarget: ref || forwardRef })
 
   const onShiftDown = React.useCallback(() => {
     dispatch({ type: 'SET_INPUTS', payload: { ...state.inputs, shift: 'down' } })
@@ -217,23 +205,13 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   useKeyPress('Shift', onShiftDown, onShiftUp)
 
   React.useEffect(() => {
-    dispatch({ type: 'SET_PAN', payload: state.inputs.mouse === 'down' && state.inputs.shift === 'down' })
-    dispatch({ type: 'SET_ROTATE', payload: state.inputs.mouse === 'down' && state.inputs.shift === 'up' })
-  }, [state.inputs.mouse, state.inputs.shift])
-
-  React.useEffect(() => {
     const ref: React.MutableRefObject<HTMLDivElement> = forwardRef as React.MutableRefObject<HTMLDivElement>
     if (ref && ref.current) dispatch({ type: 'SET_ELEMENT', payload: ref.current })
   }, [forwardRef])
 
   React.useEffect(() => {
-    if (!state.element || !(state.element instanceof HTMLDivElement)) return
-    state.element.onmouseleave = onMouseLeave
-    state.element.onmousemove = onMouseMove
-    state.element.onmousedown = onMouseDown
-    state.element.onmouseup = onMouseUp
-    state.element.onwheel = onWheel
-  }, [onMouseDown, onMouseLeave, onMouseMove, onMouseUp, onWheel, state.element])
+    if (ref && ref.current) dispatch({ type: 'SET_ELEMENT', payload: ref.current })
+  }, [ref])
 
   React.useEffect(() => {
     if (!state.camera) return
@@ -267,7 +245,6 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   }, [content, state])
 
   React.useEffect(() => {
-    if (!state.pan) return
     if (!state.panDelta) return
     if (!state.panDelta[0] && !state.panDelta[1]) return
     const updated = controls.orbit.pan({
@@ -278,10 +255,9 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     dispatch({ type: 'SET_CONTROLS', payload: { ...state.controls, ...updated.controls } })
     dispatch({ type: 'SET_CAMERA', payload: { ...state.camera, ...updated.camera } })
     dispatch({ type: 'SET_PAN_DELTA', payload: [0, 0] })
-  }, [state.camera, state.controls, options?.viewerOptions?.panSpeed, state.pan, state.panDelta])
+  }, [state.camera, state.controls, options?.viewerOptions?.panSpeed, state.panDelta])
 
   React.useEffect(() => {
-    if (!state.rotate) return
     if (!state.rotateDelta) return
     if (!state.rotateDelta[0] && !state.rotateDelta[1]) return
     const updated = controls.orbit.rotate({
@@ -291,7 +267,7 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     }, state.rotateDelta)
     dispatch({ type: 'SET_CONTROLS', payload: { ...state.controls, ...updated.controls } })
     dispatch({ type: 'SET_ROTATE_DELTA', payload: [0, 0] })
-  }, [state.camera, state.controls, options?.viewerOptions?.rotateSpeed, state.rotate, state.rotateDelta])
+  }, [state.camera, state.controls, options?.viewerOptions?.rotateSpeed, state.rotateDelta])
 
   React.useEffect(() => {
     if (!state.zoomDelta || !Number.isFinite(state.zoomDelta)) return
@@ -325,8 +301,8 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     }, 100)
   }, [animate, content, init, state])
 
-  if (!forwardRef) return <div ref={ref} />
-  return <div ref={forwardRef} />
+  if (!forwardRef) return <div ref={ref} style={{ touchAction: 'none' }} />
+  return <div ref={forwardRef} style={{ touchAction: 'none' }} />
 })
 
 Renderer.displayName = 'Renderer'
