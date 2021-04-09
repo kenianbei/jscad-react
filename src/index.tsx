@@ -69,7 +69,7 @@ const initialProps = ({ animate, height, options, solids, width }: RendererProps
         initialPosition: [50, -50, 50],
         panSpeed: 0.75,
         rotateSpeed: 0.002,
-        zoomSpeed: 0.08,
+        zoomSpeed: 0.03,
         ...options?.viewerOptions
       }
     },
