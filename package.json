@@ -20,7 +20,7 @@
     "src"
   ],
   "dependencies": {
-    "@jscad/regl-renderer": "alpha"
+    "@jscad/regl-renderer": "^2.0.0"
   },
   "peerDependencies": {
     "react": "^17.0.0",
