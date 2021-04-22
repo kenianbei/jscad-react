@@ -18,7 +18,7 @@ npm i -S @jscad/modeling
 
 ## Usage
 
-### Typescript
+### Typescript ([live demo](https://codesandbox.io/s/jscad-react-ts-demo-soqt1?file=/src/App.tsx))
 
 ```ts
 import * as React from 'react'
@@ -34,7 +34,7 @@ const App: React.FC = () => {
 render(<App />, document.body)
 ```
 
-### Javascript
+### Javascript ([live demo](https://codesandbox.io/s/jscad-react-js-demo-knen3))
 
 ```js
 import * as React from 'react'
