@@ -1,14 +1,21 @@
 import * as React from 'react'
 import { cameras, controls, drawCommands, entitiesFromSolids, prepareRender } from '@jscad/regl-renderer'
+import { cameraState } from '@jscad/regl-renderer/types/cameras/perspectiveCamera'
+import { controlsState } from '@jscad/regl-renderer/types/controls/orbitControls'
+import * as renderingDefaults from '@jscad/regl-renderer/types/rendering/renderDefaults'
 import { useAnimationFrame, useKeyPress } from './hooks'
 import { useDrag, usePinch, useWheel } from 'react-use-gesture'
-
-type Solid = any;
+import { InitializationOptions } from 'regl'
+import { Geom2, Geom3 } from '@jscad/modeling/src/geometries/types'
 
 interface RendererProps {
   animate?: boolean;
+  glOptions?: InitializationOptions;
   height?: number;
   options?: {
+    axisOptions?: {
+      show?: boolean;
+    };
     gridOptions?: {
       show?: boolean;
       color?: number[];
@@ -18,9 +25,7 @@ interface RendererProps {
       size?: number[];
       ticks?: number[];
     };
-    axisOptions?: {
-      show?: boolean;
-    };
+    renderingOptions?: typeof renderingDefaults;
     viewerOptions?: {
       initialPosition?: number[];
       panSpeed?: number;
@@ -28,13 +33,13 @@ interface RendererProps {
       zoomSpeed?: number;
     };
   };
-  solids: Solid[];
+  solids: Geom2[] | Geom3[];
   width?: number;
 }
 
 interface RendererState {
-  camera?: any;
-  controls?: any;
+  camera?: typeof cameraState;
+  controls?: typeof controlsState;
   element: HTMLDivElement | null;
   inputs: {
     shift: 'up' | 'down';
@@ -46,11 +51,16 @@ interface RendererState {
   zoomDelta: number;
 }
 
-const initialProps = ({ animate, height, options, solids, width }: RendererProps): RendererProps => {
+const initialProps = ({ animate, glOptions, height, options, solids, width }: RendererProps): RendererProps => {
   return {
     animate: animate || false,
+    glOptions,
     height: height || 480,
     options: {
+      axisOptions: {
+        show: true,
+        ...options?.axisOptions
+      },
       gridOptions: {
         show: true,
         color: [0, 0, 0, 1],
@@ -61,9 +71,17 @@ const initialProps = ({ animate, height, options, solids, width }: RendererProps
         ticks: [12, 1],
         ...options?.gridOptions
       },
-      axisOptions: {
-        show: true,
-        ...options?.axisOptions
+      renderingOptions: {
+        background: [0.5, 0.5, 0.5, 1],
+        meshColor: [0, 0.6, 1, 1],
+        lightColor: [1, 1, 1, 1],
+        lightDirection: [0.2, 0.2, 1],
+        lightPosition: [100, 200, 100],
+        ambientLightAmount: 0.3,
+        diffuseLightAmount: 0.89,
+        specularLightAmount: 0.16,
+        materialShininess: 8.0,
+        ...options?.renderingOptions
       },
       viewerOptions: {
         initialPosition: [50, -50, 50],
@@ -106,12 +124,14 @@ type RendererAction =
 function reducer (state: RendererState, action: RendererAction): RendererState {
   switch (action.type) {
     case 'SET_CAMERA': {
+      if (!state.camera) return { ...state }
       const updated = cameras.perspective.update({ ...state.camera, ...action.payload })
       return {
         ...state,
         camera: { ...action.payload, ...updated }
       } }
     case 'SET_CONTROLS': {
+      if (!action.payload || !state.camera) return { ...state }
       const updated = controls.orbit.update({ controls: action.payload, camera: state.camera })
       return {
         ...state,
@@ -132,12 +152,13 @@ document.addEventListener('gesturestart', e => e.preventDefault())
 document.addEventListener('gesturechange', e => e.preventDefault())
 
 const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forwardRef) => {
-  const { animate, height, options, solids, width } = initialProps(props)
+  const { animate, glOptions, height, options, solids, width } = initialProps(props)
   const [state, dispatch] = React.useReducer(reducer, initialState(options))
   const ref = React.useRef<HTMLDivElement>(null)
 
   const content = React.useMemo(() => {
     return {
+      rendering: options?.renderingOptions,
       drawCommands: {
         drawGrid: drawCommands.drawGrid,
         drawAxis: drawCommands.drawAxis,
@@ -162,7 +183,7 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
             show: options?.axisOptions?.show
           }
         },
-        ...entitiesFromSolids({}, solids)
+        ...entitiesFromSolids({}, ...solids)
       ]
     }
   }, [
@@ -174,6 +195,7 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     options?.gridOptions?.subColor,
     options?.gridOptions?.ticks,
     options?.gridOptions?.transparent,
+    options?.renderingOptions,
     solids
   ])
 
@@ -233,17 +255,15 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
     if (!state.camera) return
     dispatch({
       type: 'SET_RENDER',
-      payload: prepareRender({
-        glOptions: { container: state.element },
-        camera: state.camera,
-        ...content
-      })
+      payload: prepareRender({ glOptions: { ...glOptions, container: state.element } })
     })
-  }, [content, state])
+  }, [content, glOptions, state])
 
   React.useEffect(() => {
     if (!state.panDelta) return
     if (!state.panDelta[0] && !state.panDelta[1]) return
+    if (!state.camera) return
+    if (!state.controls) return
     const updated = controls.orbit.pan({
       controls: state.controls,
       camera: state.camera,
@@ -257,6 +277,8 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
   React.useEffect(() => {
     if (!state.rotateDelta) return
     if (!state.rotateDelta[0] && !state.rotateDelta[1]) return
+    if (!state.camera) return
+    if (!state.controls) return
     const updated = controls.orbit.rotate({
       controls: state.controls,
       camera: state.camera,
@@ -268,6 +290,8 @@ const Renderer = React.forwardRef<HTMLDivElement, RendererProps>((props, forward
 
   React.useEffect(() => {
     if (!state.zoomDelta || !Number.isFinite(state.zoomDelta)) return
+    if (!state.camera) return
+    if (!state.controls) return
     const updated = controls.orbit.zoom({
       controls: state.controls,
       camera: state.camera,
