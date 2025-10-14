@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 // Based off a tweet and codesandbox:
 // https://mobile.twitter.com/hieuhlc/status/1164369876825169920
@@ -23,7 +23,7 @@ function useKeyPress (targetKey: string, onKeyDown: () => void, onKeyUp: () => v
 }
 
 const useAnimationFrame = (enabled: boolean, callback: (time: number, delta: number) => void, deps: React.DependencyList): void => {
-  const frame = useRef<number>()
+  const frame = useRef<number>(null)
   const last = useRef(performance.now())
   const init = useRef(performance.now())
 

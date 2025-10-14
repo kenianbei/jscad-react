@@ -1,7 +1,7 @@
 {
   "name": "jscad-react",
   "description": "React component for rendering jscad models.",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Norman Kerr 柯念北",
   "license": "MIT",
   "repository": "https://github.com/kenianbei/jscad-react",
@@ -24,20 +24,20 @@
     "@jscad/regl-renderer": "^2.0.0"
   },
   "peerDependencies": {
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-use-gesture": "^9.0.0"
   },
   "devDependencies": {
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.0.0",
-    "@typescript-eslint/parser": "^4.0.0",
-    "eslint": "^7.0.0",
-    "eslint-config-standard": "^16.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-standard": "^17.0.0",
     "eslint-plugin-react": "^7.0.0",
-    "eslint-plugin-react-hooks": "^4.0.0",
-    "typescript": "^4.0.0"
+    "eslint-plugin-react-hooks": "^6.0.0",
+    "typescript": "^5.0.0"
   },
   "scripts": {
     "build": "tsc",
